@@ -1,5 +1,6 @@
 package com.example.contri;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
@@ -19,8 +20,12 @@ public class SplashActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                Intent intent= new Intent(SplashActivity.this,MainActivity.class);
+                startActivity(intent);
+
                 finish();
             }
-        },null,3000);
+        },null,1500);
+
     }
 }

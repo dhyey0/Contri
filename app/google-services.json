@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "748070330208",
+    "project_id": "contri-f2397",
+    "storage_bucket": "contri-f2397.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:748070330208:android:4f1117a906cfa155f20805",
+        "android_client_info": {
+          "package_name": "com.example.contri"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9WX58lc1nf9Eurzdii-ImWbGgT9dxSgU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
