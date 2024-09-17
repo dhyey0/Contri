@@ -1,1 +1,1 @@
-this is COntri an expense sharing platform
+this is Contri an expense sharing platform
