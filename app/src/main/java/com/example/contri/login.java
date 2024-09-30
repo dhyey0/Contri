@@ -1,3 +1,4 @@
+
 package com.example.contri;
 
 import android.content.Intent;
@@ -67,7 +68,7 @@ public class login extends AppCompatActivity {
                             if(task.isSuccessful())
                             {
 
-                                Intent intent=new Intent(login.this, home.class);
+                                Intent intent=new Intent(login.this, MainActivity.class);
                                 startActivity(intent);
                                 finish();
 
@@ -124,3 +125,4 @@ public class login extends AppCompatActivity {
 
     }
 }
+
