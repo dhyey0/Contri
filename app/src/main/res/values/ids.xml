@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="passid" type="id" />
+    <item name="action_settings" type="id" />
+    <item name="friendsListView" type="id" />
+    <item name="addExpenseButton" type="id" />
+    <item name="addFriendButton" type="id" />
+    <item name="expenseAmountInput" type="id" />
+    <item name="friendEmailInput" type="id" />
+</resources>
