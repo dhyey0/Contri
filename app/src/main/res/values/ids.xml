@@ -7,4 +7,8 @@
     <item name="addFriendButton" type="id" />
     <item name="expenseAmountInput" type="id" />
     <item name="friendEmailInput" type="id" />
+    <item name="settleExpensesButton" type="id" />
+    <item name="expensesListView" type="id" />
+    <item name="settleExpenseButton" type="id" />
+    <item name="viewExpensesButton" type="id" />
 </resources>

@@ -1,37 +1,66 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Input for Friend's Email -->
     <EditText
         android:id="@+id/friendEmailInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter Friend's Email"
-        android:inputType="textEmailAddress" />
+        android:hint="Friend's Email"
+        android:inputType="textEmailAddress"
+        android:layout_marginBottom="16dp"/>
 
+    <!-- Input for Expense Amount -->
     <EditText
         android:id="@+id/expenseAmountInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter Expense Amount"
-        android:inputType="numberDecimal" />
+        android:hint="Expense Amount"
+        android:inputType="numberDecimal"
+        android:layout_marginBottom="16dp"/>
 
+    <!-- Add Friend Button -->
     <Button
         android:id="@+id/addFriendButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add Friend" />
+        android:text="Add Friend"
+        android:layout_marginBottom="16dp"/>
 
+    <!-- Add Expense Button -->
     <Button
         android:id="@+id/addExpenseButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add Expense" />
+        android:text="Add Expense"
+        android:layout_marginBottom="16dp"/>
 
-    <ListView
-        android:id="@+id/friendsListView"
+    <!-- View Expenses Button -->
+    <Button
+        android:id="@+id/viewExpensesButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="View Expenses"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Settle Expense Button -->
+    <Button
+        android:id="@+id/settleExpenseButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Settle Expense"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- ListView for Displaying Expenses -->
+    <ListView
+        android:id="@+id/expensesListView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:dividerHeight="1dp"/>
 </LinearLayout>

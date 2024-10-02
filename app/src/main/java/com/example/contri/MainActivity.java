@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,16 +27,16 @@ import java.util.regex.Pattern;
 public class MainActivity extends AppCompatActivity {
 
     private EditText friendEmailInput, expenseAmountInput;
-    private Button addFriendButton, addExpenseButton;
-    private ListView friendsListView;
+    private Button addFriendButton, addExpenseButton, viewExpensesButton, settleExpenseButton;
+    private ListView expensesListView;
 
-    private ArrayList<String> friendsList;
-    private FriendsAdapter friendsAdapter;
+    private ArrayList<String> expensesList;
+    private ExpensesAdapter expensesAdapter;
 
     private DatabaseReference databaseReference;
     private FirebaseAuth mAuth;
 
-    // Regular expression for validating email
+    // Email validation pattern
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
             "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}");
 
@@ -45,130 +46,157 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Initialize views
+        initViews();
+
+        // Firebase authentication and reference setup
+        mAuth = FirebaseAuth.getInstance();
+        if (mAuth.getCurrentUser() != null) {
+            setupFirebaseReference();
+        } else {
+            Toast.makeText(MainActivity.this, "User not authenticated", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+        // Load friends and expenses on start
+        loadFriendsFromDatabase();
+        loadExpensesForCurrentUser();
+
+        // Set button click listeners
+        setButtonListeners();
+    }
+
+    // Initialize all views
+    private void initViews() {
         friendEmailInput = findViewById(R.id.friendEmailInput);
         expenseAmountInput = findViewById(R.id.expenseAmountInput);
         addFriendButton = findViewById(R.id.addFriendButton);
         addExpenseButton = findViewById(R.id.addExpenseButton);
-        friendsListView = findViewById(R.id.friendsListView);
+        viewExpensesButton = findViewById(R.id.viewExpensesButton);
+        settleExpenseButton = findViewById(R.id.settleExpenseButton);
+        expensesListView = findViewById(R.id.expensesListView);
 
-        mAuth = FirebaseAuth.getInstance();
+        expensesList = new ArrayList<>();
+        expensesAdapter = new ExpensesAdapter(this, expensesList);
+        expensesListView.setAdapter(expensesAdapter);
+    }
 
-        // Check if user is authenticated
-        if (mAuth.getCurrentUser() != null) {
-            String userId = mAuth.getCurrentUser().getUid();
-            Toast.makeText(MainActivity.this, userId, Toast.LENGTH_SHORT).show();
-            databaseReference = FirebaseDatabase.getInstance().getReference("users").child(userId).child("friends");
-        } else {
-            Toast.makeText(MainActivity.this, "User not authenticated", Toast.LENGTH_SHORT).show();
-            return; // Exit if user is not authenticated
+    // Setup Firebase reference for current user
+    private void setupFirebaseReference() {
+        String userId = mAuth.getCurrentUser().getUid();
+        Toast.makeText(MainActivity.this, "User: " + userId, Toast.LENGTH_SHORT).show();
+        databaseReference = FirebaseDatabase.getInstance().getReference("users").child(userId).child("friends");
+    }
+
+    // Set click listeners for the buttons
+    private void setButtonListeners() {
+        addFriendButton.setOnClickListener(view -> handleAddFriend());
+        addExpenseButton.setOnClickListener(view -> handleAddExpense());
+        viewExpensesButton.setOnClickListener(view -> loadExpensesForCurrentUser());
+        settleExpenseButton.setOnClickListener(view -> handleSettleExpense());
+    }
+
+    // Handle adding a new friend
+    private void handleAddFriend() {
+        String friendEmail = friendEmailInput.getText().toString().trim();
+
+        if (validateEmail(friendEmail)) {
+            findFriendInFirebase(friendEmail);
+            friendEmailInput.setText(""); // Clear input after adding
         }
-
-        friendsList = new ArrayList<>();
-        friendsAdapter = new FriendsAdapter(this, friendsList);
-        friendsListView.setAdapter(friendsAdapter);
-
-        // Load existing friends and expenses from Firebase
-        loadFriendsFromDatabase();
-        loadExpensesForCurrentUser(); // Load expenses when activity starts
-
-        // Add Friend button click listener
-        addFriendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String friendEmail = friendEmailInput.getText().toString().trim();
-
-                if (TextUtils.isEmpty(friendEmail)) {
-                    Toast.makeText(MainActivity.this, "Please enter a friend's email", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (!isValidEmail(friendEmail)) {
-                    Toast.makeText(MainActivity.this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                // Check if the friend is registered in Firebase
-                findFriendInFirebase(friendEmail);
-                friendEmailInput.setText(""); // Clear input after adding
-            }
-        });
-
-        // Add Expense button click listener
-        addExpenseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String friendEmail = friendEmailInput.getText().toString().trim();
-                String expenseAmountStr = expenseAmountInput.getText().toString().trim();
-
-                if (TextUtils.isEmpty(friendEmail) || TextUtils.isEmpty(expenseAmountStr)) {
-                    Toast.makeText(MainActivity.this, "Please enter both friend's email and expense", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                try {
-                    double expenseAmount = Double.parseDouble(expenseAmountStr);
-                    // Call method to save expense for both users
-                    saveExpenseForBothUsers(friendEmail, expenseAmount);
-                    expenseAmountInput.setText(""); // Clear input after adding
-                } catch (NumberFormatException e) {
-                    Toast.makeText(MainActivity.this, "Please enter a valid number for expense", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
     }
 
-    // Method to check if an email is valid
-    private boolean isValidEmail(String email) {
-        return EMAIL_PATTERN.matcher(email).matches();
+    // Handle adding a new expense
+    private void handleAddExpense() {
+        String friendEmail = friendEmailInput.getText().toString().trim();
+        String expenseAmountStr = expenseAmountInput.getText().toString().trim();
+
+        if (validateEmail(friendEmail) && validateExpenseAmount(expenseAmountStr)) {
+            double expenseAmount = Double.parseDouble(expenseAmountStr);
+            saveExpenseForBothUsers(friendEmail, expenseAmount);
+            expenseAmountInput.setText(""); // Clear input after adding
+        }
     }
 
-    // Method to load friends from Firebase
+    // Handle settling expenses
+    private void handleSettleExpense() {
+        String friendEmail = friendEmailInput.getText().toString().trim();
+        if (TextUtils.isEmpty(friendEmail)) {
+            Toast.makeText(MainActivity.this, "Please enter the friend's email to settle the expense", Toast.LENGTH_SHORT).show();
+        } else {
+            settleExpenseWithFriend(friendEmail);
+        }
+    }
+
+    // Validate email input
+    private boolean validateEmail(String email) {
+        if (TextUtils.isEmpty(email)) {
+            Toast.makeText(MainActivity.this, "Please enter a friend's email", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            Toast.makeText(MainActivity.this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+
+    // Validate expense amount input
+    private boolean validateExpenseAmount(String amountStr) {
+        if (TextUtils.isEmpty(amountStr)) {
+            Toast.makeText(MainActivity.this, "Please enter the expense amount", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        try {
+            Double.parseDouble(amountStr);
+        } catch (NumberFormatException e) {
+            Toast.makeText(MainActivity.this, "Please enter a valid number for expense", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+
+    // Load friends from Firebase
     private void loadFriendsFromDatabase() {
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                friendsList.clear();
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                expensesList.clear();
                 for (DataSnapshot friendSnapshot : dataSnapshot.getChildren()) {
                     String friendEmail = friendSnapshot.child("email").getValue(String.class);
                     Double balance = friendSnapshot.child("balance").getValue(Double.class);
-                    friendsList.add(friendEmail + ": $" + (balance != null ? balance : 0.0));
-
-                    // Log the data for debugging
-                    Log.d("FirebaseData", "Friend: " + friendEmail + ", Balance: " + balance);
+                    expensesList.add(friendEmail + ": $" + (balance != null ? balance : 0.0));
                 }
-                friendsAdapter.notifyDataSetChanged();
+                expensesAdapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onCancelled(@NonNull DatabaseError databaseError) {
                 Toast.makeText(MainActivity.this, "Failed to load friends.", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    // Method to find a friend by email in Firebase and add them to your friends list
+    // Find friend by email in Firebase
     private void findFriendInFirebase(String friendEmail) {
         DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
         usersRef.orderByChild("email").equalTo(friendEmail).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    // Friend found, add to the friends list
                     addFriendToDatabase(friendEmail);
                 } else {
-                    // Friend not found
                     Toast.makeText(MainActivity.this, "Friend not registered in the system", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onCancelled(@NonNull DatabaseError databaseError) {
                 Toast.makeText(MainActivity.this, "Failed to search for friend.", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    // Method to add a new friend to Firebase
+    // Add new friend to Firebase
     private void addFriendToDatabase(String friendEmail) {
         Map<String, Object> friendData = new HashMap<>();
         friendData.put("email", friendEmail);
@@ -179,75 +207,79 @@ public class MainActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Failed to add friend", Toast.LENGTH_SHORT).show());
     }
 
-    // Method to save an expense for both users
+    // Save expense for both users
     private void saveExpenseForBothUsers(String friendEmail, double expenseAmount) {
         String currentUserId = mAuth.getCurrentUser().getUid();
-        String expenseId = FirebaseDatabase.getInstance().getReference("expenses").push().getKey(); // Generate a unique key for the expense
+        String expenseId = FirebaseDatabase.getInstance().getReference("expenses").push().getKey();
 
         if (expenseId != null) {
-            // Create expense data to save
             Map<String, Object> expenseData = new HashMap<>();
             expenseData.put("user1Email", mAuth.getCurrentUser().getEmail());
             expenseData.put("user2Email", friendEmail);
             expenseData.put("amount", expenseAmount);
             expenseData.put("timestamp", System.currentTimeMillis());
+            expenseData.put("settled", false);
 
-            // Save expense for both users
-            DatabaseReference expensesRef = FirebaseDatabase.getInstance().getReference("expenses");
-            expensesRef.child(expenseId).setValue(expenseData)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(MainActivity.this, "Expense saved successfully", Toast.LENGTH_SHORT).show();
-                        updateFriendBalance(friendEmail, expenseAmount); // Update friend balance as well
-                    })
-                    .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Failed to save expense", Toast.LENGTH_SHORT).show());
+            FirebaseDatabase.getInstance().getReference("expenses").child(currentUserId).child(expenseId).setValue(expenseData);
+            FirebaseDatabase.getInstance().getReference("expenses").child(friendEmail.replace(".", "_")).child(expenseId).setValue(expenseData);
+
+            updateFriendBalance(friendEmail, expenseAmount);
         }
     }
 
-    // Method to update the balance of a friend in Firebase
-    private void updateFriendBalance(String friendEmail, double expenseAmount) {
-        databaseReference.child(friendEmail.replace(".", "_")).child("balance").addListenerForSingleValueEvent(new ValueEventListener() {
+    // Update friend's balance in Firebase
+    private void updateFriendBalance(String friendEmail, double amount) {
+        DatabaseReference friendRef = databaseReference.child(friendEmail.replace(".", "_")).child("balance");
+        friendRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Double currentBalance = snapshot.getValue(Double.class);
-                if (currentBalance == null) {
-                    currentBalance = 0.0;
-                }
-
-                double newBalance = currentBalance + expenseAmount;
-                databaseReference.child(friendEmail.replace(".", "_")).child("balance").setValue(newBalance);
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Double currentBalance = dataSnapshot.getValue(Double.class);
+                if (currentBalance == null) currentBalance = 0.0;
+                friendRef.setValue(currentBalance + amount)
+                        .addOnSuccessListener(aVoid -> Toast.makeText(MainActivity.this, "Expense added successfully", Toast.LENGTH_SHORT).show())
+                        .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Failed to update balance", Toast.LENGTH_SHORT).show());
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {
-                Toast.makeText(MainActivity.this, "Failed to update balance.", Toast.LENGTH_SHORT).show();
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(MainActivity.this, "Failed to update balance", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    // Method to load expenses for the current user
+    // Settle expense with friend
+    private void settleExpenseWithFriend(String friendEmail) {
+        databaseReference.child(friendEmail.replace(".", "_")).child("balance").setValue(0.0)
+                .addOnSuccessListener(aVoid -> Toast.makeText(MainActivity.this, "Expense settled", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Failed to settle expense", Toast.LENGTH_SHORT).show());
+    }
+
+    // Load expenses for the current user
     private void loadExpensesForCurrentUser() {
-        String userEmail = mAuth.getCurrentUser().getEmail();
-        DatabaseReference expensesRef = FirebaseDatabase.getInstance().getReference("expenses");
+        String currentUserId = mAuth.getCurrentUser().getUid();
+        DatabaseReference expensesRef = FirebaseDatabase.getInstance().getReference("expenses").child(currentUserId);
 
         expensesRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                expensesList.clear();
                 for (DataSnapshot expenseSnapshot : dataSnapshot.getChildren()) {
                     String user1Email = expenseSnapshot.child("user1Email").getValue(String.class);
                     String user2Email = expenseSnapshot.child("user2Email").getValue(String.class);
-                    double amount = expenseSnapshot.child("amount").getValue(Double.class);
+                    Double amount = expenseSnapshot.child("amount").getValue(Double.class);
+                    Boolean settled = expenseSnapshot.child("settled").getValue(Boolean.class);
 
-                    // Display expenses that involve the current user
-                    if (user1Email.equals(userEmail) || user2Email.equals(userEmail)) {
-                        // Log the data for debugging or you can display it in a ListView/RecyclerView
-                        Log.d("ExpenseData", "User 1: " + user1Email + ", User 2: " + user2Email + ", Amount: " + amount);
+                    if (user1Email != null && user2Email != null && amount != null) {
+                        String expenseDetails = user1Email + " owes " + user2Email + ": $" + amount + (settled ? " (Settled)" : " (Pending)");
+                        expensesList.add(expenseDetails);
                     }
                 }
+                expensesAdapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(MainActivity.this, "Failed to load expenses.", Toast.LENGTH_SHORT).show();
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(MainActivity.this, "Failed to load expenses", Toast.LENGTH_SHORT).show();
             }
         });
     }
