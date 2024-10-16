@@ -1,33 +1,47 @@
 package com.example.contri;
 
 public class Expense {
-    private String user2Email;
-    private double amount;
-    private boolean settled;
+    private String id;
+    private String title;
+    private long amount;
+    private String paidBy;
+    private String sharedWith;
+    private String time;
 
     public Expense() {
-        // Default constructor required for calls to DataSnapshot.getValue(Expense.class)
+        // Default constructor for Firebase
     }
 
-    public Expense(String user2Email, double amount, boolean settled) {
-        this.user2Email = user2Email;
+    public Expense(String id, String title, long amount, String paidBy, String sharedWith, String time) {
+        this.id = id;
+        this.title = title;
         this.amount = amount;
-        this.settled = settled;
+        this.paidBy = paidBy;
+        this.sharedWith = sharedWith;
+        this.time = time;
     }
 
-    public String getUser2Email() {
-        return user2Email;
+    public String getId() {
+        return id;
     }
 
-    public double getAmount() {
+    public String getTitle() {
+        return title;
+    }
+
+    public long getAmount() {
         return amount;
     }
 
-    public boolean isSettled() {
-        return settled;
+    public String getPaidBy() {
+        return paidBy;
     }
 
-    public void setSettled(boolean settled) {
-        this.settled = settled;
+    public String getSharedWith() {
+        return sharedWith;
+    }
+
+    public String getTime() {
+        return time;
     }
 }

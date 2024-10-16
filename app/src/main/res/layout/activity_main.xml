@@ -1,66 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    tools:context=".MainActivity">
 
-    <!-- Input for Friend's Email -->
-    <EditText
-        android:id="@+id/friendEmailInput"
+    <!-- Main content layout -->
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Friend's Email"
-        android:inputType="textEmailAddress"
-        android:layout_marginBottom="16dp"/>
+        android:layout_height="match_parent">
 
-    <!-- Input for Expense Amount -->
-    <EditText
-        android:id="@+id/expenseAmountInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Expense Amount"
-        android:inputType="numberDecimal"
-        android:layout_marginBottom="16dp"/>
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:title="Contri" />
 
-    <!-- Add Friend Button -->
-    <Button
-        android:id="@+id/addFriendButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Add Friend"
-        android:layout_marginBottom="16dp"/>
+        <TextView
+            android:id="@+id/welcomeTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Welcome to Contri!"
+            android:textSize="24sp"
+            android:layout_centerInParent="true" />
 
-    <!-- Add Expense Button -->
-    <Button
-        android:id="@+id/addExpenseButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Add Expense"
-        android:layout_marginBottom="16dp"/>
+    </RelativeLayout>
 
-    <!-- View Expenses Button -->
-    <Button
-        android:id="@+id/viewExpensesButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="View Expenses"
-        android:layout_marginBottom="16dp"/>
+    <!-- Navigation Drawer -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/drawer_menu" />
 
-    <!-- Settle Expense Button -->
-    <Button
-        android:id="@+id/settleExpenseButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Settle Expense"
-        android:layout_marginBottom="16dp"/>
-
-    <!-- ListView for Displaying Expenses -->
-    <ListView
-        android:id="@+id/expensesListView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:dividerHeight="1dp"/>
-</LinearLayout>
+</androidx.drawerlayout.widget.DrawerLayout>

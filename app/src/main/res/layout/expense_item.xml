@@ -1,4 +1,3 @@
-<!-- res/layout/item_friend.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -6,17 +5,13 @@
     android:padding="16dp">
 
     <TextView
-        android:id="@+id/friendEmailTextView"
+        android:id="@+id/expenseAmount"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Friend Email"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:layout_height="wrap_content"/>
 
-    <TextView
-        android:id="@+id/netBalanceTextView"
+    <Button
+        android:id="@+id/settleButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Net Balance"
-        android:textSize="16sp" />
+        android:text="Settle"/>
 </LinearLayout>

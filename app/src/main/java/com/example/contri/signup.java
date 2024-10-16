@@ -23,7 +23,7 @@ import java.util.Map;
 
 public class signup extends AppCompatActivity {
     Button b;
-    EditText Email, Pass, phone;
+    EditText Email, Pass;
     FirebaseAuth mAuth;
 
     @Override
@@ -68,15 +68,46 @@ public class signup extends AppCompatActivity {
                                     // Save the user in Firebase Database
                                     String userId = mAuth.getCurrentUser().getUid();
                                     DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(userId);
-                                    Map<String, Object> userData = new HashMap<>();
-                                    userData.put("email", email);
-                                    userRef.setValue(userData);
 
-                                    // Sign-up success
-                                    Toast.makeText(signup.this, "Authentication successful.", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(signup.this, MainActivity.class);
-                                    startActivity(intent);
-                                    finish();
+                                    // Create a map for user data with the correct structure
+                                    Map<String, Object> userData = new HashMap<>();
+                                    userData.put("ownEmail", email);  // Store own email
+
+                                    // Initialize the 'friends' node with an empty friend structure
+                                    Map<String, Object> friends = new HashMap<>();
+                                    Map<String, Object> friendDetails = new HashMap<>();
+
+                                    // Initialize the balances and expenses for the friend
+                                    friendDetails.put("balanceUser1ToUser2", 0);
+                                    friendDetails.put("balanceUser2ToUser1", 0);
+                                    friendDetails.put("netBalance", 0);
+
+                                    // Initialize empty expenses for the friend
+                                    Map<String, Object> expenses = new HashMap<>();
+                                    friendDetails.put("expenses", expenses);  // Empty expenses node
+
+                                    friends.put("friendUserId1", friendDetails);  // Add a friend (use actual friend ID in practice)
+
+                                    // Add the 'friends' node to the user data
+                                    userData.put("friends", friends);
+
+                                    // Save the data structure to Firebase
+                                    userRef.setValue(userData)
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    if (task.isSuccessful()) {
+                                                        // Sign-up success
+                                                        Toast.makeText(signup.this, "Sign-up successful. Welcome!", Toast.LENGTH_SHORT).show();
+                                                        Intent intent = new Intent(signup.this, MainActivity.class);
+                                                        startActivity(intent);
+                                                        finish();
+                                                    } else {
+                                                        // If saving to database fails, show a message
+                                                        Toast.makeText(signup.this, "Failed to create user in database.", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                }
+                                            });
                                 } else {
                                     // If sign-up fails, display a message to the user
                                     Toast.makeText(signup.this, "Authentication failed.", Toast.LENGTH_SHORT).show();

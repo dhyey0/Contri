@@ -9,25 +9,33 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class FriendsAdapter extends ArrayAdapter<String> {
-    private final Context context;
-    private final ArrayList<String> friendsList;
+public class FriendsAdapter extends ArrayAdapter<Friend> {
 
-    public FriendsAdapter(Context context, ArrayList<String> friendsList) {
-        super(context, R.layout.friend_item, friendsList);
-        this.context = context;
-        this.friendsList = friendsList;
+    public FriendsAdapter(Context context, ArrayList<Friend> friends) {
+        super(context, 0, friends);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View rowView = inflater.inflate(R.layout.friend_item, parent, false);
+        // Get the data item for this position
+        Friend friend = getItem(position);
 
-        TextView friendNameTextView = rowView.findViewById(R.id.friendNameTextView);
-        friendNameTextView.setText(friendsList.get(position));
+        // Check if an existing view is being reused, otherwise inflate the view
+        if (convertView == null) {
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.friend_item, parent, false);
+        }
 
-        return rowView;
+        // Lookup view for data population
+        TextView friendEmailTextView = convertView.findViewById(R.id.friendEmailTextView);
+        TextView netBalanceTextView = convertView.findViewById(R.id.netBalanceTextView);
+
+        // Populate the data into the template view using the data object
+        if (friend != null) {
+            friendEmailTextView.setText(friend.getEmail());
+            netBalanceTextView.setText("Net Balance: " + friend.getNetBalance() + "₹"); // Display net balance
+        }
+
+        // Return the completed view to render on screen
+        return convertView;
     }
 }
-

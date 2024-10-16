@@ -11,4 +11,7 @@
     <item name="expensesListView" type="id" />
     <item name="settleExpenseButton" type="id" />
     <item name="viewExpensesButton" type="id" />
+    <item name="expenseTitle" type="id" />
+    <item name="expenseTimestamp" type="id" />
+    <item name="expenseStatus" type="id" />
 </resources>

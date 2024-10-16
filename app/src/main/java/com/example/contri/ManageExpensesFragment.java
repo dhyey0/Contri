@@ -28,7 +28,7 @@ public class ManageExpensesFragment extends Fragment {
     private EditText friendEmailInput, expenseAmountInput;
     private Button addExpenseButton;
     private ListView friendsListView;
-    private ArrayList<String> friendsList;
+    private ArrayList<Friend> friendsList;
     private FriendsAdapter friendsAdapter;
     private DatabaseReference databaseReference;
     private FirebaseAuth mAuth;
@@ -84,7 +84,8 @@ public class ManageExpensesFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 friendsList.clear();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    friendsList.add(snapshot.getKey());
+                    Friend friend = snapshot.getValue(Friend.class);
+                    friendsList.add(friend);
                 }
                 friendsAdapter.notifyDataSetChanged();
             }
@@ -97,15 +98,17 @@ public class ManageExpensesFragment extends Fragment {
     }
 
     private void updateFriendBalance(String friendEmail, double expenseAmount) {
-        databaseReference.child(friendEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.orderByChild("email").equalTo(friendEmail).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    double currentBalance = dataSnapshot.child("balance").getValue(Double.class);
-                    double newBalance = currentBalance + expenseAmount;
-                    databaseReference.child(friendEmail).child("balance").setValue(newBalance)
-                            .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Expense added", Toast.LENGTH_SHORT).show())
-                            .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to add expense", Toast.LENGTH_SHORT).show());
+                    for (DataSnapshot friendSnapshot : dataSnapshot.getChildren()) {
+                        double currentBalance = friendSnapshot.child("balance").getValue(Double.class);
+                        double newBalance = currentBalance + expenseAmount;
+                        friendSnapshot.getRef().child("balance").setValue(newBalance)
+                                .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Expense added", Toast.LENGTH_SHORT).show())
+                                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to add expense", Toast.LENGTH_SHORT).show());
+                    }
                 } else {
                     Toast.makeText(getContext(), "Friend not found", Toast.LENGTH_SHORT).show();
                 }

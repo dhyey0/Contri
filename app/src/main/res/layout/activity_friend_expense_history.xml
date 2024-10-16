@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- ListView for showing past expenses -->
+    <ListView
+        android:id="@+id/expenseListView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <!-- EditText to enter the title of the expense -->
+    <EditText
+        android:id="@+id/titleEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Expense Title" />
+
+    <!-- EditText to enter the amount for the expense -->
+    <EditText
+        android:id="@+id/amountEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:hint="Amount" />
+
+    <!-- RadioGroup to select who paid for the expense -->
+    <RadioGroup
+        android:id="@+id/paidByRadioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/paidByYouRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="You" />
+
+        <RadioButton
+            android:id="@+id/paidByFriendRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Friend" />
+    </RadioGroup>
+
+    <!-- Button to add a new expense -->
+    <Button
+        android:id="@+id/addExpenseButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add Expense" />
+
+    <!-- Button to settle balances -->
+    <Button
+        android:id="@+id/settleBalancesButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Settle Balances" />
+
+</LinearLayout>
